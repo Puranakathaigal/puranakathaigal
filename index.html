@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>புராணகதைகள்</title>
+<meta name="theme-color" content="#B3181E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@500;600;700;800&family=Hind+Madurai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF8EF;
+    --paper-2:#FFFFFF;
+    --ink:#241512;
+    --ink-soft:#5A4A45;
+    --red:#B3181E;
+    --red-deep:#7E0F13;
+    --gold:#C0902A;
+    --gold-bg:#FBF1DC;
+    --line:#ECE0CC;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Hind Madurai',sans-serif;
+    min-height:100vh;
+    padding-bottom:78px;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Baloo Thambi 2',sans-serif;color:var(--ink);}
+
+  /* top bar */
+  header.topbar{
+    position:sticky; top:0; z-index:30;
+    background:var(--paper-2);
+    padding:14px 18px;
+    border-bottom:3px solid var(--red);
+    display:flex; align-items:center; gap:12px;
+  }
+  header.topbar img{width:44px;height:44px;border-radius:12px;object-fit:contain;background:var(--gold-bg);box-shadow:0 2px 8px rgba(179,24,30,.18);padding:2px;}
+  header.topbar .titles{flex:1;}
+  header.topbar h1{margin:0;font-size:19px;font-weight:700;color:var(--red);letter-spacing:.2px;}
+  header.topbar p{margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);}
+
+  main{max-width:560px;margin:0 auto;padding:18px 16px 10px;}
+  .page{display:none;}
+  .page.active{display:block; animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .section-title{
+    display:flex;align-items:center;gap:12px;margin:6px 0 16px;
+  }
+  .section-title h2{margin:0;font-size:17px;color:var(--red);white-space:nowrap;}
+  .section-title .bar{flex:1;height:2px;background:var(--line);}
+
+  /* story cards */
+  .story-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:18px;
+    box-shadow:0 4px 14px rgba(36,21,18,.06);
+  }
+  .story-card .thumb-wrap{position:relative;aspect-ratio:16/9;background:#000;cursor:pointer;}
+  .story-card img.thumb{width:100%;height:100%;object-fit:cover;display:block;}
+  .story-card .play{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  }
+  .story-card .play span{
+    width:52px;height:52px;border-radius:50%;
+    background:rgba(179,24,30,0.9);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .story-card .play svg{width:20px;height:20px;fill:#fff;margin-left:3px;}
+  .story-card .body{padding:14px 16px 16px;}
+  .story-card h3{margin:0 0 6px;font-size:15px;line-height:1.4;color:var(--ink);font-weight:600;font-family:'Hind Madurai',sans-serif;}
+  .story-card .meta{font-size:11.5px;color:var(--ink-soft);}
+
+  .subtabs{display:flex;gap:6px;margin-bottom:18px;background:var(--gold-bg);border-radius:12px;padding:4px;border:1px solid var(--line);}
+  .subtab-btn{
+    flex:1;background:none;border:none;color:var(--ink-soft);font-family:'Hind Madurai',sans-serif;font-size:12.5px;
+    padding:10px 4px;border-radius:9px;font-weight:700;
+  }
+  .subtab-btn.active{background:var(--red);color:#fff;}
+  .subpage{display:none;}
+  .subpage.active{display:block;animation:fadeIn .2s ease;}
+
+  .text-story-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);border-radius:12px;
+    padding:18px 18px 16px;margin-bottom:18px;
+    box-shadow:0 4px 14px rgba(36,21,18,.06);
+  }
+  .text-story-card h3{margin:0 0 4px;font-size:16px;color:var(--red);font-family:'Baloo Thambi 2',sans-serif;}
+  .text-story-card .meta{font-size:11px;color:var(--ink-soft);margin-bottom:10px;}
+  .text-story-card .body-text{
+    font-size:13.5px;line-height:1.8;color:#3A2A25;white-space:pre-line;
+    max-height:120px;overflow:hidden;position:relative;
+  }
+  .text-story-card .body-text.expanded{max-height:none;}
+  .text-story-card .body-text.clamped::after{
+    content:"";position:absolute;bottom:0;left:0;right:0;height:40px;
+    background:linear-gradient(180deg, transparent, var(--paper-2));
+  }
+  .text-story-card .read-more{
+    background:none;border:none;color:var(--red);font-family:'Hind Madurai',sans-serif;
+    font-size:12.5px;font-weight:700;padding:8px 0 0;
+  }
+  .text-story-card audio{width:100%;margin-top:12px;border-radius:20px;}
+
+  .skeleton{
+    background:linear-gradient(90deg, var(--gold-bg) 25%, #fff 37%, var(--gold-bg) 63%);
+    background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite;
+    border-radius:12px;height:180px;margin-bottom:18px;border:1px solid var(--line);
+  }
+  @keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+
+  .empty-state, .error-state{
+    text-align:center;padding:32px 14px;color:var(--ink-soft);font-size:13.5px;
+    background:var(--gold-bg);border-radius:12px;border:1px dashed var(--gold);
+  }
+  .error-state a{color:var(--red);font-weight:700;}
+
+  /* calendar */
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .cal-header button{
+    background:var(--paper-2);border:1px solid var(--line);color:var(--red);
+    width:36px;height:36px;border-radius:10px;font-size:16px;
+  }
+  .cal-header .month-label{font-size:16px;font-weight:700;color:var(--ink);font-family:'Baloo Thambi 2',sans-serif;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
+  .cal-dow{text-align:center;font-size:11px;color:var(--ink-soft);padding-bottom:4px;font-weight:600;}
+  .cal-day{
+    aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border-radius:10px;background:var(--paper-2);font-size:13px;color:var(--ink-soft);position:relative;
+    border:1px solid var(--line);
+  }
+  .cal-day.empty{background:transparent;border-color:transparent;}
+  .cal-day.festival{
+    background:var(--red);
+    color:#fff;font-weight:700;border-color:var(--red-deep);
+  }
+  .cal-day.today{outline:2px solid var(--gold);outline-offset:1px;}
+  .cal-day .dot{width:4px;height:4px;border-radius:50%;background:#fff;margin-top:2px;}
+
+  .fest-list{display:flex;flex-direction:column;gap:10px;}
+  .fest-item{
+    display:flex;gap:12px;align-items:center;
+    background:var(--paper-2);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px;
+  }
+  .fest-item .date-chip{
+    min-width:52px;text-align:center;background:var(--gold-bg);border-radius:8px;padding:6px 4px;
+    color:var(--red);font-weight:700;font-size:13px;line-height:1.2;
+  }
+  .fest-item .date-chip small{display:block;font-size:9.5px;color:var(--ink-soft);font-weight:500;}
+  .fest-item .name{font-size:14px;color:var(--ink);font-weight:600;}
+  .fest-item .tag{font-size:11px;color:var(--ink-soft);}
+
+  .note-box{
+    font-size:11.5px;color:var(--ink-soft);background:var(--gold-bg);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:16px;
+  }
+
+  /* about */
+  .profile-card{
+    text-align:center;background:linear-gradient(120deg, var(--red-deep), var(--red) 60%, var(--gold) 140%);
+    border-radius:16px;padding:28px 18px;margin-bottom:18px;color:#fff;
+  }
+  .profile-card img{width:70px;height:70px;border-radius:50%;background:#fff;padding:4px;margin-bottom:12px;object-fit:contain;}
+  .profile-card h2{margin:0 0 8px;color:#fff;font-size:19px;}
+  .profile-card p{margin:0 auto;max-width:340px;font-size:13px;color:#FCEFDD;line-height:1.7;}
+
+  .link-btn{
+    display:flex;align-items:center;gap:12px;
+    background:var(--paper-2);border:1px solid var(--line);
+    border-radius:12px;padding:14px 16px;margin-bottom:12px;text-decoration:none;color:var(--ink);
+    box-shadow:0 4px 14px rgba(36,21,18,.05);
+  }
+  .link-btn .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .link-btn .icon.yt{background:var(--gold-bg);}
+  .link-btn .icon.ig{background:linear-gradient(45deg,#5a3a8a,#8a3a5a,#c9527a);}
+  .link-btn .icon svg{width:20px;height:20px;}
+  .link-btn .txt strong{display:block;font-size:14.5px;color:var(--red);}
+  .link-btn .txt span{font-size:12px;color:var(--ink-soft);}
+  .link-btn .arrow{margin-left:auto;color:var(--red);font-weight:700;}
+
+  footer.appfoot{text-align:center;font-size:11px;color:var(--ink-soft);padding:20px 0 4px;}
+
+  /* bottom nav */
+  nav.bottomnav{
+    position:fixed;bottom:0;left:0;right:0;z-index:40;
+    background:var(--paper-2);
+    border-top:1px solid var(--line);
+    display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  nav.bottomnav button{
+    flex:1;background:none;border:none;color:var(--ink-soft);
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-family:'Hind Madurai',sans-serif;font-size:11px;font-weight:600;padding:6px 2px;border-radius:10px;
+  }
+  nav.bottomnav button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;}
+  nav.bottomnav button.active{color:var(--red);}
+  nav.bottomnav button.active svg{fill:var(--gold-bg);}
+
+  /* video modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(36,21,18,.85);z-index:100;
+    display:none;align-items:center;justify-content:center;padding:16px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{width:100%;max-width:640px;}
+  .modal-box .frame-wrap{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;}
+  .modal-box iframe{width:100%;height:100%;border:0;}
+  .modal-close{
+    display:block;margin:14px auto 0;background:var(--red);color:#fff;border:none;
+    padding:11px 24px;border-radius:24px;font-weight:700;font-size:13px;font-family:'Hind Madurai',sans-serif;
+  }
+
+  /* day modal */
+  .day-modal-content{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:16px;
+    padding:22px;max-width:340px;width:100%;
+  }
+  .day-modal-content h3{margin:0 0 8px;color:var(--red);font-size:17px;}
+  .day-modal-content p{margin:0 0 14px;font-size:13.5px;color:var(--ink-soft);line-height:1.6;}
+
+  /* ---------- dark mode ---------- */
+  body.dark{
+    --paper:#1B1210;
+    --paper-2:#241815;
+    --ink:#F3E9E2;
+    --ink-soft:#C9B6AC;
+    --line:#3A2A24;
+    --gold-bg:#2E2119;
+  }
+  body.dark .cal-day{ color:var(--ink-soft); }
+  body.dark .skeleton{ background:linear-gradient(90deg, var(--gold-bg) 25%, #33241d 37%, var(--gold-bg) 63%); }
+
+  /* ---------- header actions ---------- */
+  header.topbar{ gap:10px; }
+  .header-actions{ display:flex; gap:8px; margin-left:auto; }
+  .icon-btn{
+    width:36px;height:36px;border-radius:10px;border:1px solid var(--line);
+    background:var(--paper-2);color:var(--red);display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .icon-btn svg{width:18px;height:18px;}
+
+  /* ---------- home page ---------- */
+  .home-hero{
+    background:linear-gradient(120deg, var(--red-deep), var(--red) 60%, var(--gold) 140%);
+    border-radius:16px;padding:22px 20px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  .home-hero .kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#FBE6C8;font-weight:700;}
+  .home-hero h2{color:#fff;font-size:20px;margin:8px 0 4px;}
+  .home-hero p{color:#FCEFDD;font-size:12.5px;margin:0;}
+
+  .search-wrap{position:relative;margin-bottom:20px;}
+  .search-wrap input{
+    width:100%;padding:13px 16px 13px 42px;border-radius:12px;border:1px solid var(--line);
+    background:var(--paper-2);color:var(--ink);font-family:'Hind Madurai',sans-serif;font-size:13.5px;
+  }
+  .search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--ink-soft);fill:none;stroke-width:1.8;}
+  .search-results{margin-bottom:10px;}
+  .search-result-item{
+    display:flex;align-items:center;gap:10px;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;
+  }
+  .search-result-item .tagpill{font-size:10px;background:var(--gold-bg);color:var(--red);padding:2px 8px;border-radius:999px;font-weight:700;flex-shrink:0;}
+
+  .cat-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;
+  }
+  .cat-item{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    padding:14px 4px;text-align:center;
+  }
+  .cat-item .cat-icon{
+    width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    background:var(--gold-bg);
+  }
+  .cat-item .cat-icon svg{width:20px;height:20px;stroke:var(--red);fill:none;stroke-width:1.7;}
+  .cat-item span{font-size:10.5px;font-weight:600;color:var(--ink-soft);line-height:1.3;}
+  .cat-item.soon{opacity:.55;}
+
+  .toast{
+    position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:200;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- colorful home grid (Nithra-style) ---------- */
+  .quick-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;
+  }
+  .quick-card{
+    border-radius:16px;padding:18px 14px;color:#fff;display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,.16);position:relative;overflow:hidden;
+  }
+  .quick-card .icon-chip{
+    width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.94);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.18);flex-shrink:0;
+  }
+  .quick-card .icon-chip svg{width:28px;height:28px;stroke-width:2;fill:none;}
+  .quick-card.c-red .icon-chip svg{stroke:#B3181E;}
+  .quick-card.c-green .icon-chip svg{stroke:#2E7D32;}
+  .quick-card.c-blue .icon-chip svg{stroke:#2A5CA8;}
+  .quick-card.c-purple .icon-chip svg{stroke:#6A3FA0;}
+  .quick-card span{font-size:14.5px;font-weight:800;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .quick-card.c-red{background:linear-gradient(135deg,#E5484D,#B3181E);}
+  .quick-card.c-green{background:linear-gradient(135deg,#4CAF50,#2E7D32);}
+  .quick-card.c-blue{background:linear-gradient(135deg,#4C93E0,#2A5CA8);}
+  .quick-card.c-purple{background:linear-gradient(135deg,#9B6BD9,#6A3FA0);}
+
+  .mini-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;
+  }
+  .mini-item{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    padding:16px 4px 14px;text-align:center;position:relative;
+    box-shadow:0 4px 12px rgba(36,21,18,.05);
+  }
+  .mini-item .mini-icon{
+    width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.14);
+  }
+  .mini-item .mini-icon svg{width:27px;height:27px;stroke:#fff;fill:none;stroke-width:2;}
+  .mini-item span{font-size:11.5px;font-weight:700;color:var(--ink);line-height:1.3;}
+  .mini-item.soon{ }
+  .mini-item.soon .soon-badge{
+    position:absolute;top:6px;right:6px;background:var(--gold);color:#fff;
+    font-size:8px;font-weight:800;padding:2px 6px;border-radius:999px;letter-spacing:.02em;
+  }
+  .bg-orange{background:linear-gradient(135deg,#FFA751,#E8752E);}
+  .bg-teal{background:linear-gradient(135deg,#3DC6C0,#1E9E96);}
+  .bg-pink{background:linear-gradient(135deg,#F26FA0,#C93E77);}
+  .bg-indigo{background:linear-gradient(135deg,#7A7CE0,#4E4FB0);}
+</style>
+
+</head>
+<body>
+
+<header class="topbar">
+  <img src="icons/logo.png" alt="logo">
+  <div class="titles">
+    <h1>புராணகதைகள்</h1>
+    <p>நாட்டுப்புற மற்றும் புராண கதைகள் • குரல் & காணொளி</p>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="dark-toggle" title="Dark mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME PAGE -->
+  <section id="page-home" class="page active">
+    <div class="home-hero">
+      <div class="kicker">✦ இன்று ✦</div>
+      <h2 id="home-date">--</h2>
+      <p id="home-day">--</p>
+    </div>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="search-input" type="text" placeholder="கதைகள் தேடுங்கள்...">
+    </div>
+    <div class="search-results" id="search-results"></div>
+
+    <div class="quick-grid">
+      <div class="quick-card c-red cat-item" data-goto="page-stories" data-sub="video">
+        <div class="icon-chip"><svg viewBox="0 0 24 24"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/><path d="M18 4h2v16h-2"/></svg></div>
+        <span>வீடியோ கதைகள்</span>
+      </div>
+      <div class="quick-card c-green cat-item" data-goto="page-stories" data-sub="text">
+        <div class="icon-chip"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+        <span>எழுத்து கதைகள்</span>
+      </div>
+      <div class="quick-card c-blue cat-item" data-goto="page-calendar">
+        <div class="icon-chip"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+        <span>நாள்காட்டி</span>
+      </div>
+      <div class="quick-card c-purple cat-item" data-goto="page-calendar">
+        <div class="icon-chip"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></div>
+        <span>பண்டிகைகள்</span>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="bar"></span><h2>மேலும் சேவைகள்</h2></div>
+    <div class="mini-grid">
+      <div class="mini-item cat-item soon" data-soon="true">
+        <span class="soon-badge">விரைவில்</span>
+        <div class="mini-icon bg-orange"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <span>பஞ்சாங்கம்</span>
+      </div>
+      <div class="mini-item cat-item soon" data-soon="true">
+        <span class="soon-badge">விரைவில்</span>
+        <div class="mini-icon bg-teal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <span>ஜாதகம்</span>
+      </div>
+      <div class="mini-item cat-item soon" data-soon="true">
+        <span class="soon-badge">விரைவில்</span>
+        <div class="mini-icon bg-pink"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M10 21v-6h4v6"/></svg></div>
+        <span>கோவில் தகவல்</span>
+      </div>
+      <div class="mini-item cat-item" data-goto="page-about">
+        <div class="mini-icon bg-indigo"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1-3.6 4-5.5 7-5.5s6 1.9 7 5.5"/></svg></div>
+        <span>எங்களைப் பற்றி</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORIES PAGE -->
+  <section id="page-stories" class="page">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-sub="video">வீடியோ கதைகள்</button>
+      <button class="subtab-btn" data-sub="text">எழுத்து / ஆடியோ கதைகள்</button>
+    </div>
+
+    <div id="sub-video" class="subpage active">
+      <div class="section-title"><span class="bar"></span><h2>சமீபத்திய வீடியோக்கள்</h2></div>
+      <div id="stories-container">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <div id="sub-text" class="subpage">
+      <div class="section-title"><span class="bar"></span><h2>எழுத்து / ஆடியோ கதைகள்</h2></div>
+      <div id="text-stories-container"></div>
+    </div>
+  </section>
+
+  <!-- CALENDAR PAGE -->
+  <section id="page-calendar" class="page">
+    <div class="section-title"><span class="bar"></span><h2>ஆன்மீக நாள்காட்டி</h2></div>
+    <div class="note-box">இந்த தேதிகள் பொதுவான தமிழ் பஞ்சாங்கத்தை அடிப்படையாகக் கொண்டு தோராயமாகக் கொடுக்கப்பட்டுள்ளன. உங்கள் ஊர் / கோவில் பஞ்சாங்கத்துடன் சரிபார்த்துக் கொள்ளவும்.</div>
+    <div class="cal-header">
+      <button id="cal-prev">‹</button>
+      <div class="month-label" id="cal-month-label"></div>
+      <button id="cal-next">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="section-title"><span class="bar"></span><h2 id="fest-month-title">இந்த மாத விழாக்கள்</h2></div>
+    <div class="fest-list" id="fest-list"></div>
+  </section>
+
+  <!-- ABOUT PAGE -->
+  <section id="page-about" class="page">
+    <div class="profile-card">
+      <img src="icons/logo.png" alt="logo">
+      <h2>PuranaKathaigal</h2>
+      <p>சொந்த குரலிலும் சொந்த வரிகளிலும் மறக்கப்பட்ட நாட்டுப்புற மற்றும் புராணக் கதைகளை சொல்கிறோம். ஒவ்வொரு அத்தியாயமும் இங்கே கதையாகவும், காணொளியாகவும் சேமிக்கப்படும்.</p>
+    </div>
+
+    <a class="link-btn" href="https://www.youtube.com/@PuranaKathaigal-%E0%AE%AA%E0%AF%81%E0%AE%B0%E0%AE%BE%E0%AE%A3%E0%AE%95%E0%AE%A4%E0%AF%88%E0%AE%95%E0%AE%B3%E0%AF%8D" target="_blank" rel="noopener">
+    <span class="icon yt"><svg viewBox="0 0 24 24"><path fill="#ff3b3b" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z"/></svg></span>
+    <span class="txt"><strong>YouTube சேனல்</strong><span>புதிய கதைகளை பாருங்கள் / Subscribe பண்ணுங்க</span></span>
+    <span class="arrow">→</span>
+    </a>
+
+    <a class="link-btn" href="https://www.instagram.com/purana_kathaigal/" target="_blank" rel="noopener">
+    <span class="icon ig"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.7 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2 0 3.56-.07 4.81-.15 3.2-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56 0-4.81-.07-3.26-.15-4.77-1.72-4.92-4.92-.06-1.25-.07-1.61-.07-4.81 0-3.19.01-3.56.07-4.81.15-3.22 1.67-4.77 4.92-4.92C8.44 2.2 8.8 2.2 12 2.2Zm0 3.78a5.02 5.02 0 1 0 0 10.04 5.02 5.02 0 0 0 0-10.04Zm0 8.28a3.26 3.26 0 1 1 0-6.52 3.26 3.26 0 0 1 0 6.52Zm5.22-8.48a1.17 1.17 0 1 1 0-2.34 1.17 1.17 0 0 1 0 2.34Z"/></svg></span>
+    <span class="txt"><strong>Instagram பக்கம்</strong><span>Reels & புகைப்படங்களை பாருங்க</span></span>
+    <span class="arrow">→</span>
+    </a>
+
+    <footer class="appfoot">புராணகதைகள் • Made with ❤ for Tamil culture</footer>
+  </section>
+
+</main>
+
+<nav class="bottomnav">
+  <button class="active" data-page="page-home">
+    <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v10h12V10"/></svg>
+    முகப்பு
+  </button>
+  <button data-page="page-stories">
+    <svg viewBox="0 0 24 24"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/><path d="M18 4h2v16h-2"/><path d="M8 9h6M8 13h6"/></svg>
+    கதைகள்
+  </button>
+  <button data-page="page-calendar">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg>
+    நாள்காட்டி
+  </button>
+  <button data-page="page-about">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1-3.6 4-5.5 7-5.5s6 1.9 7 5.5"/></svg>
+    எங்களைப் பற்றி
+  </button>
+</nav>
+
+<div class="modal-overlay" id="video-modal">
+  <div class="modal-box">
+    <div class="frame-wrap" id="video-frame-wrap"></div>
+    <button class="modal-close" id="video-close">மூடு</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="day-modal">
+  <div class="day-modal-content" id="day-modal-content"></div>
+</div>
+
+<script>
+/* ---------- NAV ---------- */
+const navButtons = document.querySelectorAll('.bottomnav button');
+navButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    navButtons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(btn.dataset.page).classList.add('active');
+  });
+});
+
+/* ---------- DARK MODE ---------- */
+function applyDarkPref(){
+  const pref = localStorage.getItem('pk-dark');
+  if(pref === '1') document.body.classList.add('dark');
+}
+applyDarkPref();
+document.getElementById('dark-toggle').addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  localStorage.setItem('pk-dark', document.body.classList.contains('dark') ? '1':'0');
+});
+
+/* ---------- HOME: TODAY'S DATE ---------- */
+(function(){
+  const TAMIL_MONTHS_H = ["ஜனவரி","பிப்ரவரி","மார்ச்","ஏப்ரல்","மே","ஜூன்","ஜூலை","ஆகஸ்ட்","செப்டம்பர்","அக்டோபர்","நவம்பர்","டிசம்பர்"];
+  const TAMIL_DAYS_H = ["ஞாயிறு","திங்கள்","செவ்வாய்","புதன்","வியாழன்","வெள்ளி","சனி"];
+  const now = new Date();
+  document.getElementById('home-date').textContent = now.getDate() + " " + TAMIL_MONTHS_H[now.getMonth()] + " " + now.getFullYear();
+  document.getElementById('home-day').textContent = TAMIL_DAYS_H[now.getDay()] + "கிழமை";
+})();
+
+/* ---------- TOAST ---------- */
+function showToast(msg){
+  let t = document.getElementById('pk-toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'pk-toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+/* ---------- HOME: CATEGORY GRID NAVIGATION ---------- */
+document.querySelectorAll('.cat-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    if(item.dataset.soon){
+      showToast('இந்த feature விரைவில் வரும் 🙏');
+      return;
+    }
+    const pageId = item.dataset.goto;
+    const navBtn = document.querySelector(`.bottomnav button[data-page="${pageId}"]`);
+    if(navBtn) navBtn.click();
+    if(item.dataset.sub){
+      setTimeout(()=>{
+        const subBtn = document.querySelector(`.subtab-btn[data-sub="${item.dataset.sub}"]`);
+        if(subBtn) subBtn.click();
+      }, 50);
+    }
+  });
+});
+
+/* ---------- SUBTABS (video / text) ---------- */
+document.querySelectorAll('.subtab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+    document.getElementById('sub-' + btn.dataset.sub).classList.add('active');
+  });
+});
+
+/* ---------- TEXT / AUDIO STORIES ----------
+   புது கதை சேர்க்க: கீழே இருக்குற TEXT_STORIES array-ல ஒரு புது { } entry சேருங்க.
+   audio: mp3 direct link இருந்தா போடுங்க (இல்லனா அந்த line-ஐ நீக்கிடலாம்).
+--------------------------------------------- */
+const TEXT_STORIES = [
+  // உதாரணம் - இதை நகலெடுத்து உங்க கதையை போடுங்க:
+  // {
+  //   title: "கதையின் பெயர்",
+  //   date: "22 ஜூலை 2026",
+  //   text: "இங்கே முழு கதையையும் தமிழில் எழுதுங்க...",
+  //   audio: "https://example.com/story-audio.mp3" // இல்லனா இந்த line delete பண்ணுங்க
+  // },
+];
+
+function renderTextStories(){
+  const container = document.getElementById('text-stories-container');
+  if(TEXT_STORIES.length === 0){
+    container.innerHTML = `<div class="empty-state">இன்னும் எழுத்து/ஆடியோ கதைகள் சேர்க்கப்படவில்லை.<br><br>index.html-ல் <strong>TEXT_STORIES</strong> array-ல் புது கதை சேர்க்கலாம்.</div>`;
+    return;
+  }
+  container.innerHTML = TEXT_STORIES.map((s, i)=>`
+    <div class="text-story-card">
+      <h3>${s.title}</h3>
+      <div class="meta">${s.date || ''}</div>
+      <div class="body-text clamped" id="story-text-${i}">${s.text}</div>
+      <button class="read-more" data-i="${i}">மேலும் படிக்க</button>
+      ${s.audio ? `<audio controls src="${s.audio}"></audio>` : ''}
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.read-more').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById('story-text-' + btn.dataset.i);
+      el.classList.toggle('expanded');
+      el.classList.toggle('clamped');
+      btn.textContent = el.classList.contains('expanded') ? 'குறைவாக காட்டு' : 'மேலும் படிக்க';
+    });
+  });
+}
+renderTextStories();
+
+/* ---------- STORIES (YouTube videos) ----------
+   புது வீடியோ சேர்க்க: YouTube-ல உங்க video-ஐ open பண்ணி, browser address bar-ல
+   இருக்குற link-ஐ பாருங்க: https://www.youtube.com/watch?v=XXXXXXXXXXX
+   அந்த "v=" க்கு அப்புறம் இருக்குற XXXXXXXXXXX (11 characters) தான் Video ID.
+   அதை கீழே ஒரு புது entry-ஆ சேருங்க:
+--------------------------------------------- */
+const CHANNEL_URL = "https://www.youtube.com/@PuranaKathaigal-%E0%AE%AA%E0%AF%81%E0%AE%B0%E0%AE%BE%E0%AE%A3%E0%AE%95%E0%AE%A4%E0%AF%88%E0%AE%95%E0%AE%B3%E0%AF%8D";
+const VIDEO_STORIES = [
+  {
+    videoId: "vwLyYPF-cWA",
+    title: "Bannari Mariamman History",
+    date: "22 ஜூலை 2026"
+  },
+  {
+    videoId: "rpGWKUgoaME",
+    title: "Maasani Amman Varalaru",
+    date: "22 ஜூலை 2026"
+  },
+  {
+    videoId: "RSHug0E67Eo",
+    title: "Ayya Vaikundar Full Story in Tamil",
+    date: "22 ஜூலை 2026"
+  },
+  {
+    videoId: "YKbUOurjB8s",
+    title: "Swami Ayyapan Story in Tamil",
+    date: "22 ஜூலை 2026"
+  },
+  {
+    videoId: "eh2Aj-HNUPo",
+    title: "Vempadi Sudalaimadan Story in Tamil",
+    date: "22 ஜூலை 2026"
+  },
+  {
+    videoId: "ao4FUrJl3eo",
+    title: "Vellimalai Karuppasamy History Story in Tamil",
+    date: "22 ஜூலை 2026"
+  },
+];
+
+function loadStories(){
+  const container = document.getElementById('stories-container');
+
+  if(VIDEO_STORIES.length === 0){
+    container.innerHTML = `
+      <div class="error-state">
+        இன்னும் வீடியோக்கள் இங்கே சேர்க்கப்படவில்லை.<br><br>
+        index.html-ல் <strong>VIDEO_STORIES</strong> array-ல் video ID சேர்க்கலாம்.<br><br>
+        <a href="${CHANNEL_URL}" target="_blank" rel="noopener">YouTube சேனலை நேரடியாக பார்க்க →</a>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  VIDEO_STORIES.forEach(v=>{
+    const card = document.createElement('div');
+    card.className = 'story-card';
+    card.innerHTML = `
+      <div class="thumb-wrap" data-vid="${v.videoId}">
+        <img class="thumb" src="https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg" loading="lazy" alt="">
+        <div class="play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div>
+      </div>
+      <div class="body">
+        <h3>${v.title}</h3>
+        <div class="meta">${v.date || ''}</div>
+      </div>`;
+    container.appendChild(card);
+  });
+
+  container.querySelectorAll('.thumb-wrap').forEach(tw=>{
+    tw.addEventListener('click', ()=> openVideo(tw.dataset.vid));
+  });
+}
+loadStories();
+
+function openVideo(videoId){
+  const wrap = document.getElementById('video-frame-wrap');
+  wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  document.getElementById('video-modal').classList.add('open');
+}
+document.getElementById('video-close').addEventListener('click', ()=>{
+  document.getElementById('video-modal').classList.remove('open');
+  document.getElementById('video-frame-wrap').innerHTML = "";
+});
+document.getElementById('video-modal').addEventListener('click', (e)=>{
+  if(e.target.id === 'video-modal'){
+    document.getElementById('video-modal').classList.remove('open');
+    document.getElementById('video-frame-wrap').innerHTML = "";
+  }
+});
+
+/* ---------- HOME SEARCH ---------- */
+document.getElementById('search-input').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  const resultsBox = document.getElementById('search-results');
+  if(q.length < 1){ resultsBox.innerHTML = ''; return; }
+
+  const vMatches = VIDEO_STORIES.filter(v => (v.title||'').toLowerCase().includes(q));
+  const tMatches = TEXT_STORIES.filter(t => (t.title||'').toLowerCase().includes(q));
+
+  if(vMatches.length===0 && tMatches.length===0){
+    resultsBox.innerHTML = '<div class="empty-state">பொருந்தும் கதைகள் இல்லை.</div>';
+    return;
+  }
+
+  let html = '';
+  vMatches.forEach(v=>{
+    html += `<div class="search-result-item" data-type="video" data-vid="${v.videoId}"><span class="tagpill">வீடியோ</span><span>${v.title}</span></div>`;
+  });
+  tMatches.forEach((t,i)=>{
+    html += `<div class="search-result-item" data-type="text" data-idx="${TEXT_STORIES.indexOf(t)}"><span class="tagpill">எழுத்து</span><span>${t.title}</span></div>`;
+  });
+  resultsBox.innerHTML = html;
+
+  resultsBox.querySelectorAll('.search-result-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(el.dataset.type === 'video'){
+        openVideo(el.dataset.vid);
+      } else {
+        document.querySelector('.bottomnav button[data-page="page-stories"]').click();
+        setTimeout(()=>{
+          document.querySelector('.subtab-btn[data-sub="text"]').click();
+        }, 50);
+      }
+    });
+  });
+});
+
+/* ---------- CALENDAR ---------- */
+// key: "YYYY-M-D" (month 0-indexed)  -> {name, tag}
+const FESTIVALS = {
+  "2026-0-14": {name:"போகி / பொங்கல் தொடக்கம்", tag:"அறுவடை பண்டிகை"},
+  "2026-0-15": {name:"தை பொங்கல் / மாட்டுப் பொங்கல்", tag:"அறுவடை பண்டிகை"},
+  "2026-0-16": {name:"காணும் பொங்கல்", tag:"பண்டிகை"},
+  "2026-1-1":  {name:"தைப்பூசம்", tag:"முருகன் வழிபாடு"},
+  "2026-1-15": {name:"மகா சிவராத்திரி", tag:"சிவன் வழிபாடு"},
+  "2026-2-3":  {name:"மாசி மகம்", tag:"புனித நீராடல்"},
+  "2026-2-4":  {name:"ஹோலி", tag:"பண்டிகை"},
+  "2026-3-1":  {name:"பங்குனி உத்திரம்", tag:"திருக்கல்யாணம்"},
+  "2026-3-14": {name:"புத்தாண்டு (தமிழ் புத்தாண்டு)", tag:"தமிழ் புத்தாண்டு"},
+  "2026-4-1":  {name:"புத்த பூர்ணிமா", tag:"பௌர்ணமி"},
+  "2026-4-30": {name:"வைகாசி விசாகம்", tag:"முருகன் வழிபாடு"},
+  "2026-6-16": {name:"ஆடி (தமிழ் மாதம் தொடக்கம்)", tag:"தமிழ் மாதம்"},
+  "2026-6-29": {name:"குரு பூர்ணிமா", tag:"பௌர்ணமி"},
+  "2026-7-3":  {name:"ஆடி பெருக்கு", tag:"நதி வழிபாடு"},
+  "2026-7-28": {name:"வரலட்சுமி விரதம்", tag:"விரதம்"},
+  "2026-8-4":  {name:"கிருஷ்ண ஜயந்தி (கோகுலாஷ்டமி)", tag:"கிருஷ்ணர் வழிபாடு"},
+  "2026-8-14": {name:"விநாயகர் சதுர்த்தி", tag:"விநாயகர் வழிபாடு"},
+  "2026-9-11": {name:"நவராத்திரி தொடக்கம்", tag:"நவராத்திரி"},
+  "2026-9-19": {name:"ஆயுத பூஜை", tag:"நவராத்திரி"},
+  "2026-9-20": {name:"விஜயதசமி", tag:"நவராத்திரி நிறைவு"},
+  "2026-10-6": {name:"தந்தேரஸ்", tag:"தீபாவளி காலம்"},
+  "2026-10-8": {name:"தீபாவளி", tag:"முக்கிய பண்டிகை"},
+  "2026-10-24":{name:"கார்த்திகை தீபம் (பூர்ணிமா)", tag:"தீப பண்டிகை"},
+  "2026-11-29":{name:"வைகுண்ட ஏகாதசி", tag:"ஏகாதசி விரதம்"},
+};
+// சந்திர நாள் (Tithi) கணக்கீடு - New/Full moon அடிப்படையில் தோராயமாக
+// (Pradosham/Sashti/Ekadashi ஆகியவை ±1 நாள் மாறுபடலாம் - உள்ளூர் பஞ்சாங்கத்துடன் சரிபார்க்கவும்)
+const SYNODIC_MONTH = 29.530588853;
+const KNOWN_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14) / 86400000; // days since unix epoch
+function getTithi(y, m, d){
+  const days = Date.UTC(y, m, d, 12) / 86400000; // noon local-ish reference
+  let age = (days - KNOWN_NEW_MOON) % SYNODIC_MONTH;
+  if (age < 0) age += SYNODIC_MONTH;
+  let tithi = Math.floor(age / (SYNODIC_MONTH / 30)) + 1;
+  if (tithi > 30) tithi = 30;
+  return tithi; // 1-15 Shukla paksha, 16-30 Krishna paksha
+}
+const RECURRING_TAGS = {
+  15: {name:"பௌர்ணமி", tag:"முழு நிலவு நாள்"},
+  30: {name:"அமாவாசை", tag:"அமாவாசை நாள்"},
+  13: {name:"பிரதோஷம்", tag:"சிவன் வழிபாட்டுக்கு சிறந்த நாள்"},
+  28: {name:"பிரதோஷம்", tag:"சிவன் வழிபாட்டுக்கு சிறந்த நாள்"},
+  11: {name:"ஏகாதசி", tag:"விஷ்ணு வழிபாடு / விரதம்"},
+  26: {name:"ஏகாதசி", tag:"விஷ்ணு வழிபாடு / விரதம்"},
+  6:  {name:"சஷ்டி", tag:"முருகன் வழிபாடு"},
+  21: {name:"சஷ்டி", tag:"முருகன் வழிபாடு"},
+};
+function getRecurringObservance(y, m, d){
+  const tithi = getTithi(y, m, d);
+  return RECURRING_TAGS[tithi] || null;
+}
+
+const TAMIL_MONTHS = ["ஜனவரி","பிப்ரவரி","மார்ச்","ஏப்ரல்","மே","ஜூன்","ஜூலை","ஆகஸ்ட்","செப்டம்பர்","அக்டோபர்","நவம்பர்","டிசம்பர்"];
+const TAMIL_DOW = ["ஞா","தி","செ","பு","வி","வெ","ச"];
+
+let calYear = 2026, calMonth = 6; // start at current-ish month (July 2026)
+const today = new Date();
+
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent = `${TAMIL_MONTHS[calMonth]} ${calYear}`;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = "";
+  TAMIL_DOW.forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const firstDow = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  for(let i=0;i<firstDow;i++){
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    grid.appendChild(el);
+  }
+  for(let day=1; day<=daysInMonth; day++){
+    const key = `${calYear}-${calMonth}-${day}`;
+    const fest = FESTIVALS[key] || getRecurringObservance(calYear, calMonth, day);
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (fest? ' festival':'') +
+      (today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===day ? ' today':'');
+    el.innerHTML = `${day}${fest? '<div class="dot"></div>':''}`;
+    if(fest){
+      el.addEventListener('click', ()=> openDayModal(day, fest));
+    }
+    grid.appendChild(el);
+  }
+  renderFestList();
+}
+
+function renderFestList(){
+  const list = document.getElementById('fest-list');
+  document.getElementById('fest-month-title').textContent = `${TAMIL_MONTHS[calMonth]} மாத விழாக்கள்`;
+  const items = Object.entries(FESTIVALS)
+    .filter(([key])=>{
+      const [y,m] = key.split('-').map(Number);
+      return y===calYear && m===calMonth;
+    });
+
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  for(let day=1; day<=daysInMonth; day++){
+    const key = `${calYear}-${calMonth}-${day}`;
+    if(FESTIVALS[key]) continue; // fixed festival already takes priority for this day
+    const rec = getRecurringObservance(calYear, calMonth, day);
+    if(rec) items.push([key, rec]);
+  }
+  items.sort((a,b)=> Number(a[0].split('-')[2]) - Number(b[0].split('-')[2]));
+
+  if(items.length===0){
+    list.innerHTML = `<div class="empty-state">இந்த மாதத்தில் குறிப்பிட்ட விழாக்கள் இல்லை.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(([key, fest])=>{
+    const day = key.split('-')[2];
+    return `<div class="fest-item">
+      <div class="date-chip">${day}<small>${TAMIL_MONTHS[calMonth].slice(0,3)}</small></div>
+      <div>
+        <div class="name">${fest.name}</div>
+        <div class="tag">${fest.tag}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDayModal(day, fest){
+  const content = document.getElementById('day-modal-content');
+  content.innerHTML = `
+    <h3>${day} ${TAMIL_MONTHS[calMonth]} ${calYear}</h3>
+    <p><strong>${fest.name}</strong><br>${fest.tag}</p>
+    <button class="modal-close" onclick="document.getElementById('day-modal').classList.remove('open')">சரி</button>
+  `;
+  document.getElementById('day-modal').classList.add('open');
+}
+document.getElementById('day-modal').addEventListener('click', (e)=>{
+  if(e.target.id === 'day-modal') e.currentTarget.classList.remove('open');
+});
+
+document.getElementById('cal-prev').addEventListener('click', ()=>{
+  calMonth--; if(calMonth<0){calMonth=11; calYear--;}
+  renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', ()=>{
+  calMonth++; if(calMonth>11){calMonth=0; calYear++;}
+  renderCalendar();
+});
+renderCalendar();
+
+/* ---------- SERVICE WORKER ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
