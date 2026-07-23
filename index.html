@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ta">
 <head>
+<script>
+  // Ensure the URL always ends with a trailing slash so relative paths
+  // (icons/logo.png, manifest.json, etc.) resolve correctly no matter
+  // how the link was typed or shared (with or without the final "/").
+  if (!location.pathname.endsWith('/')) {
+    location.replace(location.pathname + '/' + location.search + location.hash);
+  }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>புராணகதைகள்</title>
@@ -114,6 +122,10 @@
     font-size:12.5px;font-weight:700;padding:8px 0 0;
   }
   .text-story-card audio{width:100%;margin-top:12px;border-radius:20px;}
+  .text-story-card .story-image{
+    width:100%;border-radius:10px;margin-bottom:12px;display:block;
+    max-height:320px;object-fit:cover;
+  }
 
   .skeleton{
     background:linear-gradient(90deg, var(--gold-bg) 25%, #fff 37%, var(--gold-bg) 63%);
@@ -593,6 +605,7 @@ document.querySelectorAll('.subtab-btn').forEach(btn=>{
 
 /* ---------- TEXT / AUDIO STORIES ----------
    புது கதை சேர்க்க: கீழே இருக்குற TEXT_STORIES array-ல ஒரு புது { } entry சேருங்க.
+   image: கோவில்/தெய்வம் photo இருந்தா அதோட link போடுங்க (இல்லனா அந்த line-ஐ நீக்கிடலாம்).
    audio: mp3 direct link இருந்தா போடுங்க (இல்லனா அந்த line-ஐ நீக்கிடலாம்).
 --------------------------------------------- */
 const TEXT_STORIES = [
@@ -600,6 +613,7 @@ const TEXT_STORIES = [
   // {
   //   title: "கதையின் பெயர்",
   //   date: "22 ஜூலை 2026",
+  //   image: "images/example.jpg",
   //   text: "இங்கே முழு கதையையும் தமிழில் எழுதுங்க...",
   //   audio: "https://example.com/story-audio.mp3" // இல்லனா இந்த line delete பண்ணுங்க
   // },
@@ -613,6 +627,7 @@ function renderTextStories(){
   }
   container.innerHTML = TEXT_STORIES.map((s, i)=>`
     <div class="text-story-card">
+      ${s.image ? `<img class="story-image" src="${s.image}" alt="${s.title}" loading="lazy">` : ''}
       <h3>${s.title}</h3>
       <div class="meta">${s.date || ''}</div>
       <div class="body-text clamped" id="story-text-${i}">${s.text}</div>
