@@ -604,22 +604,25 @@ document.querySelectorAll('.subtab-btn').forEach(btn=>{
 });
 
 /* ---------- TEXT / AUDIO STORIES ----------
-   புது கதை சேர்க்க: கீழே இருக்குற TEXT_STORIES array-ல ஒரு புது { } entry சேருங்க.
-   image: கோவில்/தெய்வம் photo இருந்தா அதோட link போடுங்க (இல்லனா அந்த line-ஐ நீக்கிடலாம்).
-   audio: mp3 direct link இருந்தா போடுங்க (இல்லனா அந்த line-ஐ நீக்கிடலாம்).
+   புது கதை சேர்க்க (LONG stories-க்கு இதுவே சரியான வழி - index.html-ஐ பெரிதாக்காது):
+   1. உங்க கதை (எவ்வளவு பெரிசானாலும்) ஒரு .txt file-ஆ எழுதி, "stories" folder-ல் upload பண்ணுங்க
+      (உதா: stories/karuppasamy.txt)
+   2. கீழே ஒரு புது entry சேருங்க, "file" field-ல் அந்த .txt file path-ஐ கொடுங்க.
+   3. Story text app-ல் open பண்ணும்போது மட்டும் load ஆகும் (list load ஆகும்போது இல்ல) -
+      இதனால app வேகமா இருக்கும், எத்தனை பெரிய stories சேர்த்தாலும் பரவாயில்லை.
 --------------------------------------------- */
 const TEXT_STORIES = [
   // உதாரணம் - இதை நகலெடுத்து உங்க கதையை போடுங்க:
   // {
   //   title: "கதையின் பெயர்",
   //   date: "22 ஜூலை 2026",
-  //   image: "images/example.jpg",
-  //   text: "இங்கே முழு கதையையும் தமிழில் எழுதுங்க...",
+  //   image: "images/example.jpg",       // கோவில்/தெய்வம் photo (இல்லனா இந்த line நீக்கிடுங்க)
+  //   file: "stories/example.txt",       // கதை முழுசும் இந்த .txt file உள்ளே இருக்கணும்
   //   audio: "https://example.com/story-audio.mp3" // இல்லனா இந்த line delete பண்ணுங்க
   // },
 ];
 
-function renderTextStories(){
+async function renderTextStories(){
   const container = document.getElementById('text-stories-container');
   if(TEXT_STORIES.length === 0){
     container.innerHTML = `<div class="empty-state">இன்னும் எழுத்து/ஆடியோ கதைகள் சேர்க்கப்படவில்லை.<br><br>index.html-ல் <strong>TEXT_STORIES</strong> array-ல் புது கதை சேர்க்கலாம்.</div>`;
@@ -630,15 +633,32 @@ function renderTextStories(){
       ${s.image ? `<img class="story-image" src="${s.image}" alt="${s.title}" loading="lazy">` : ''}
       <h3>${s.title}</h3>
       <div class="meta">${s.date || ''}</div>
-      <div class="body-text clamped" id="story-text-${i}">${s.text}</div>
+      <div class="body-text clamped" id="story-text-${i}" data-loaded="false">${s.text || 'கதையை படிக்க கீழே க்ளிக் பண்ணுங்க...'}</div>
       <button class="read-more" data-i="${i}">மேலும் படிக்க</button>
       ${s.audio ? `<audio controls src="${s.audio}"></audio>` : ''}
     </div>
   `).join('');
 
   container.querySelectorAll('.read-more').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const el = document.getElementById('story-text-' + btn.dataset.i);
+    btn.addEventListener('click', async ()=>{
+      const i = btn.dataset.i;
+      const story = TEXT_STORIES[i];
+      const el = document.getElementById('story-text-' + i);
+
+      // If this story's text lives in an external .txt file, fetch it the
+      // first time the person actually opens it (not on page load).
+      if(story.file && el.dataset.loaded === "false"){
+        el.textContent = 'ஏற்றுகிறது...';
+        try{
+          const res = await fetch(story.file);
+          if(!res.ok) throw new Error('not found');
+          el.textContent = await res.text();
+        }catch(err){
+          el.textContent = 'கதையை ஏற்ற முடியவில்லை. Story file path சரியா இருக்கான்னு சரிபார்க்கவும்.';
+        }
+        el.dataset.loaded = "true";
+      }
+
       el.classList.toggle('expanded');
       el.classList.toggle('clamped');
       btn.textContent = el.classList.contains('expanded') ? 'குறைவாக காட்டு' : 'மேலும் படிக்க';
